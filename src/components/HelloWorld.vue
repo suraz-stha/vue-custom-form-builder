@@ -6,19 +6,25 @@
           <v-list flat>
             <v-subheader>Options</v-subheader>
             <v-list-item-group v-model="item" color="primary">
-              <v-list-item v-for="(item, i) in items" :key="i">
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-btn icon>
-                    <v-icon @click="addNewElement(item.value)" color="grey lighten-1">mdi-plus-box</v-icon>
-                  </v-btn>
-                </v-list-item-action>
-              </v-list-item>
+              <VueNestable v-model="items" key-prop="id" :maxDepth="1" cross-list group="cross">
+                <div slot-scope="{ item }" :item="item">
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon v-text="item.icon"></v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title v-text="item.text"></v-list-item-title>
+                    </v-list-item-content>
+                    <VueNestableHandle :item="item">
+                      <v-list-item-action>
+                        <v-btn icon>
+                          <v-icon color="grey lighten-1">mdi-plus-box</v-icon>
+                        </v-btn>
+                      </v-list-item-action>
+                    </VueNestableHandle>
+                  </v-list-item>
+                </div>
+              </VueNestable>
             </v-list-item-group>
           </v-list>
         </v-card>
@@ -27,7 +33,14 @@
         <!-- <v-card class="mx-auto" tile>
           <v-subheader>Options</v-subheader>
         </v-card>-->
-        <VueNestable v-model="elements" key-prop="id" class-prop="class">
+        <VueNestable
+          :maxDepth="1"
+          v-model="elements"
+          key-prop="sort_position"
+          class-prop="class"
+          group="cross"
+          @change="changeList"
+        >
           <template slot-scope="{ item,index }">
             <!-- Handler -->
 
@@ -39,7 +52,7 @@
                     <v-icon color="grey lighten-1">mdi-cursor-move</v-icon>
                   </VueNestableHandle>
                   {{ item.elementName }}
-                  <span class="float-right">
+                  <span class="float-right" v-if="index>=1">
                     <v-icon @click="removeElement(index)" color="grey lighten-1">mdi-minus-circle</v-icon>
                   </span>
                 </v-card-subtitle>
@@ -94,7 +107,7 @@
           </template>
         </VueNestable>
       </v-col>
-      <v-col cols="3" md="3" sm="6">
+      <v-col cols="3" md="3" sm="6" sticky>
         <v-card class="mx-auto" tile>
           <v-subheader>Previews</v-subheader>
           <vue-nestable v-model="elements">
@@ -107,6 +120,10 @@
                 <div v-if="item.type==='email'">
                   <span>{{item.label}}</span>
                   <v-text-field type="email" :placeholder="item.placeholder" outlined dense></v-text-field>
+                </div>
+                <div v-if="item.type==='time'">
+                  <span>{{item.label}}</span>
+                  <v-text-field type="time" :placeholder="item.placeholder" outlined dense></v-text-field>
                 </div>
                 <div v-if="item.type==='number'">
                   <span>{{item.label}}</span>
@@ -165,131 +182,210 @@ export default {
   },
   data: () => ({
     item: 1,
-    nestableItems: [
+
+    items: [
       {
-        id: 0,
-        text: "Andy"
+        text: "Text Field",
+        value: "text-field",
+        icon: "mdi-open-in-new",
+        src: true,
+        id: 1
       },
       {
-        id: 1,
-        text: "Harry"
+        text: "Text Area",
+        value: "text-area",
+        icon: "mdi-tooltip-text",
+        src: true,
+        id: 2
+      },
+      {
+        text: "Select",
+        value: "select",
+        icon: "mdi-select-all",
+        src: true,
+        id: 3
+      },
+      {
+        text: "Radio Button",
+        value: "radio",
+        icon: "mdi-radiobox-marked",
+        src: true,
+        id: 4
+      },
+      {
+        text: "Checkbox",
+        value: "checkbox",
+        icon: "mdi-checkbox-multiple-marked",
+        src: true,
+        id: 5
+      },
+      {
+        text: "Email",
+        value: "email",
+        icon: "mdi-email-open",
+        src: true,
+        id: 6
+      },
+      {
+        text: "Number",
+        value: "number",
+        icon: "mdi-numeric-0-box-multiple",
+        src: true,
+        id: 7
+      },
+      {
+        text: "Password",
+        value: "password",
+        icon: "mdi-lock",
+        src: true,
+        id: 8
+      },
+      {
+        text: "Date",
+        value: "date",
+        icon: "mdi-calendar-multiple",
+        src: true,
+        id: 9
+      },
+      {
+        text: "Time",
+        value: "time",
+        icon: "mdi-calendar-multiple",
+        src: true,
+        id: 10
+      },
+      {
+        text: "Button",
+        value: "button",
+        icon: "mdi-link-variant",
+        src: true,
+        id: 11
       }
     ],
-    items: [
-      { text: "Text Field", value: "text-field", icon: "mdi-open-in-new" },
-      { text: "Text Area", value: "text-area", icon: "mdi-tooltip-text" },
-      { text: "Select", value: "select", icon: "mdi-select-all" },
-      { text: "Radio Button", value: "radio", icon: "mdi-radiobox-marked" },
-      { text: "Checkbox", value: "checkbox", icon: "mdi-checkbox-multiple-marked" },
-      { text: "Email", value: "email", icon: "mdi-email-open" },
-      { text: "Number", value: "number", icon: "mdi-numeric-0-box-multiple" },
-      { text: "Password", value: "password", icon: "mdi-lock" },
-      { text: "Date", value: "date", icon: "mdi-calendar-multiple" },
-      { text: "Button", value: "button", icon: "mdi-link-variant" }
-    ],
     textField: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "text-field",
-      elementName: "Text Field"
+      elementName: "Text Field",
+      src: false
     },
     textArea: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "text-area",
-      elementName: "Text Area"
+      elementName: "Text Area",
+      src: false
     },
     select: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "select",
       elementName: "Select",
+      src: false,
       options: []
     },
     radio: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "radio",
       elementName: "radio",
+      src: false,
       options: []
     },
     checkbox: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "checkbox",
       elementName: "checkbox",
+      src: false,
       options: []
     },
     email: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "email",
-      elementName: "email"
+      elementName: "email",
+      src: false
     },
     number: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "number",
-      elementName: "number"
+      elementName: "number",
+      src: false
     },
     password: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "password",
-      elementName: "password"
+      elementName: "password",
+      src: false
     },
     button: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "button",
-      elementName: "button"
+      elementName: "button",
+      src: false
     },
     date: {
-      id: null,
+      sort_position: null,
       label: "Label",
       placeholder: "PlaceHolder",
       name: "Name",
       required: "Required",
       type: "date",
-      elementName: "date"
+      elementName: "date",
+      src: false
+    },
+    time: {
+      sort_position: null,
+      label: "Label",
+      placeholder: "PlaceHolder",
+      name: "Name",
+      required: "Required",
+      type: "time",
+      elementName: "time",
+      src: false
     },
     idCounter: 1,
     elements: [
       {
-        id: 0,
+        sort_position: 0,
         label: "Label",
         placeholder: "PlaceHolder",
         name: "Name",
         required: "Required",
         type: "text-field",
-        elementName: "Text Field"
+        elementName: "Text Field",
+        src: false
       }
     ]
   }),
@@ -297,63 +393,70 @@ export default {
     addNewElement(type) {
       switch (type) {
         case "text-field":
-          this.textField.id = this.idCounter;
+          this.textField.sort_position = this.idCounter;
           this.elements.push(this.textField);
           break;
         case "text-area":
-          this.textArea.id = this.idCounter;
+          this.textArea.sort_position = this.idCounter;
           this.elements.push(this.textArea);
           break;
         case "select":
-          this.select.id = this.idCounter;
+          this.select.sort_position = this.idCounter;
           this.elements.push(this.select);
           break;
         case "radio":
-          this.radio.id = this.idCounter;
+          this.radio.sort_position = this.idCounter;
           this.elements.push(this.radio);
           break;
         case "checkbox":
-          this.checkbox.id = this.idCounter;
+          this.checkbox.sort_position = this.idCounter;
           this.elements.push(this.checkbox);
           break;
         case "radio":
-          this.radio.id = this.idCounter;
+          this.radio.sort_position = this.idCounter;
           this.elements.push(this.radio);
           break;
         case "email":
-          this.email.id = this.idCounter;
+          this.email.sort_position = this.idCounter;
           this.elements.push(this.email);
           break;
         case "number":
-          this.number.id = this.idCounter;
+          this.number.sort_position = this.idCounter;
           this.elements.push(this.number);
           break;
         case "password":
-          this.password.id = this.idCounter;
+          this.password.sort_position = this.idCounter;
           this.elements.push(this.password);
           break;
         case "date":
-          this.date.id = this.idCounter;
+          this.date.sort_position = this.idCounter;
           this.elements.push(this.date);
           break;
+        case "time":
+          this.time.sort_position = this.idCounter;
+          this.elements.push(this.time);
+          break;
         case "button":
-          this.button.id = this.idCounter;
+          this.button.sort_position = this.idCounter;
           this.elements.push(this.button);
           break;
       }
-      this.idCounter++;
     },
     removeElement(index) {
       this.elements.splice(index, 1);
+    },
+    changeList(value, option) {
+      let current = this;
+      if (value.src) {
+        ++this.idCounter;
+        // setTimeout(function() {
+        current.addNewElement(value.value);
+        current.removeElement(option.pathTo[0]);
+        current.items.push(value);
+        current.items.sort((a, b) => a.id - b.id);
+        // }, 200);
+      }
     }
-    // beforeMove({ dragItem, pathFrom, pathTo }) {
-    //   // Item 4 can not be nested more than one level
-    //   if (dragItem.key === 4) {
-    //     return pathTo.length === 1;
-    //   }
-    //   // All other items can be
-    //   return true;
-    // }
   }
 };
 </script>
